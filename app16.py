@@ -37,6 +37,8 @@ st.markdown("""
 # Title and Description
 st.title("⚽ Football Player Analytics Dashboard (2024-2025)")
 
+file_path = "https://raw.githubusercontent.com/kyaw-pyae-sone/football-analytics-app/refs/heads/main/dataframe.csv"
+
 # Data Loading function
 @st.cache_data
 def load_data(file):
@@ -81,7 +83,17 @@ uploaded_file = st.sidebar.file_uploader("၁။ CSV Dataset ကို တင်
 
 if uploaded_file is not None:
     df_raw = load_data(uploaded_file)
+    st.sidebar.success("Manual CSV Loaded!")
+else:
+    # Auto-load from GitHub path
+    try:
+        df_raw = load_data(file_path)
+        st.sidebar.info("Default Dataset Loaded (Auto)")
+    except Exception as e:
+        st.error(f"Error loading default data: {e}")
+        df_raw = None
     
+if df_raw is not None:
     # Sidebar Filters
     st.sidebar.header("၂။ Filter များ ရွေးချယ်ပါ")
     all_leagues = sorted(df_raw['League'].unique()) if 'League' in df_raw.columns else []
@@ -122,6 +134,21 @@ if uploaded_file is not None:
             col2.metric("Avg Age", round(df_filtered['Age'].mean(), 1))
             col3.metric("Max Goals", df_filtered['Gls'].max())
             col4.metric("Avg Minutes", int(df_filtered['Min'].mean()))
+
+            st.divider()
+
+            st.write("Statistics")
+        
+            # Dataset တစ်ခုလုံး၏ describe() ကို ထုတ်ပြခြင်း
+            # numeric columns များကိုသာ ယူပြီး transpose လုပ်ခြင်း
+            full_stat_summary = df_raw.select_dtypes(include=[np.number])
+            
+            # ID သို့မဟုတ် Rank ကဲ့သို့သော column များကို ဖယ်ထုတ်ချင်ပါက ဤနေရာတွင် ဖယ်နိုင်သည်
+            if 'Rk' in full_stat_summary.columns:
+                full_stat_summary = full_stat_summary.drop(columns=['Rk'])
+                
+            # Describe ပြသခြင်း
+            st.dataframe(full_stat_summary.describe().T.style.format("{:.2f}"), use_container_width=True)
 
             st.divider()
             
