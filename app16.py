@@ -79,7 +79,7 @@ def process_clustering(df, n_clusters=4):
 
 # Sidebar Section
 st.sidebar.title("Settings & Upload")
-uploaded_file = st.sidebar.file_uploader("၁။ CSV Dataset ကို တင်ပေးပါ", type="csv")
+uploaded_file = st.sidebar.file_uploader('1. Please upload the CSV dataset, type="csv"')
 
 if uploaded_file is not None:
     df_raw = load_data(uploaded_file)
@@ -95,12 +95,12 @@ else:
     
 if df_raw is not None:
     # Sidebar Filters
-    st.sidebar.header("၂။ Filter များ ရွေးချယ်ပါ")
+    st.sidebar.header("2. Select the filters.")
     all_leagues = sorted(df_raw['League'].unique()) if 'League' in df_raw.columns else []
-    selected_league = st.sidebar.multiselect("လိဂ်ရွေးချယ်ပါ (League)", options=all_leagues)
+    selected_league = st.sidebar.multiselect("Choose a league", options=all_leagues)
     
-    selected_squad = st.sidebar.multiselect("အသင်းရွေးချယ်ပါ (Squad)", options=sorted(df_raw['Squad'].unique()))
-    selected_pos = st.sidebar.multiselect("နေရာရွေးချယ်ပါ (Position)", options=sorted(df_raw['Pos'].unique()))
+    selected_squad = st.sidebar.multiselect("Choose a team", options=sorted(df_raw['Squad'].unique()))
+    selected_pos = st.sidebar.multiselect("Pick a position", options=sorted(df_raw['Pos'].unique()))
     
     # Filter data logic
     df_filtered = df_raw.copy()
@@ -112,7 +112,7 @@ if df_raw is not None:
         df_filtered = df_filtered[df_filtered['Pos'].isin(selected_pos)]
 
     if df_filtered.empty:
-        st.warning("⚠️ ရွေးချယ်ထားသော Filter များအရ Data မရှိပါ။ ကျေးဇူးပြု၍ Filter ပြန်ပြင်ပေးပါ။")
+        st.warning("⚠️ No data available for the selected filters. Please adjust your filter settings.")
     else:
         # Tabs for different sections
         tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
@@ -128,7 +128,7 @@ if df_raw is not None:
         ])
 
         with tab1:
-            st.subheader("အဓိက ကိန်းဂဏန်းများ (Key Metrics)")
+            st.subheader("Key Metrics")
             col1, col2, col3, col4 = st.columns(4)
             col1.metric("Total Players", len(df_filtered))
             col2.metric("Avg Age", round(df_filtered['Age'].mean(), 1))
@@ -139,15 +139,13 @@ if df_raw is not None:
 
             st.write("Statistics")
         
-            # Dataset တစ်ခုလုံး၏ describe() ကို ထုတ်ပြခြင်း
-            # numeric columns များကိုသာ ယူပြီး transpose လုပ်ခြင်း
             full_stat_summary = df_raw.select_dtypes(include=[np.number])
             
-            # ID သို့မဟုတ် Rank ကဲ့သို့သော column များကို ဖယ်ထုတ်ချင်ပါက ဤနေရာတွင် ဖယ်နိုင်သည်
+            
             if 'Rk' in full_stat_summary.columns:
                 full_stat_summary = full_stat_summary.drop(columns=['Rk'])
                 
-            # Describe ပြသခြင်း
+            
             st.dataframe(full_stat_summary.describe().T.style.format("{:.2f}"), use_container_width=True)
 
             st.divider()
@@ -170,7 +168,7 @@ if df_raw is not None:
             st.divider()
             st.subheader("📍 Player Position Analysis")
             
-            st.write("**၁။ နေရာအားလုံး စုစုပေါင်း ဖြန့်ကျက်မှု (Total Positions Distribution)**")
+            st.write("**Total Positions Distribution**")
             fig_pos_all, ax_pos_all = plt.subplots(figsize=(12, 5))
             df_filtered["Pos"].value_counts().plot(kind='bar', ax=ax_pos_all, color='#3498db', edgecolor='black')
             ax_pos_all.set_title("Distribution of All Recorded Positions", fontsize=14, pad=15)
@@ -182,7 +180,7 @@ if df_raw is not None:
             col_c1, col_c2 = st.columns(2)
             
             with col_c1:
-                st.write("**၂။ နေရာစုံကစားသူများ (Hybrid Positions Only)**")
+                st.write("**Hybrid Positions Only**")
                 fig_pos_hyb, ax_pos_hyb = plt.subplots(figsize=(10, 6))
                 df_filtered[df_filtered["Pos"].str.contains(",")]["Pos"].value_counts().plot(kind='bar', ax=ax_pos_hyb, color='#e67e22', edgecolor='black')
                 ax_pos_hyb.set_title("Hybrid Position Distribution (e.g., FW,MF)", fontsize=13)
@@ -191,7 +189,7 @@ if df_raw is not None:
                 st.pyplot(fig_pos_hyb)
 
             with col_c2:
-                st.write("**၃။ နေရာတစ်ခုတည်းကစားသူများ (Single Positions Only)**")
+                st.write("**Single Positions Only**")
                 fig_pos_single, ax_pos_single = plt.subplots(figsize=(10, 6))
                 df_filtered[~df_filtered["Pos"].str.contains(",")]["Pos"].value_counts().plot(kind='bar', ax=ax_pos_single, color='#2ecc71', edgecolor='black')
                 ax_pos_single.set_title("Single Position Distribution (Primary Role)", fontsize=13)
@@ -202,7 +200,7 @@ if df_raw is not None:
             st.divider()
             st.subheader("🌍 League & Squad Distribution")
             
-            st.write("**လိဂ်တစ်ခုချင်းစီတွင် ပါဝင်သော အသင်းအရေအတွက် (Number of Squads per League)**")
+            st.write("Number of Squads per League**")
             if 'League' in df_filtered.columns and 'Squad' in df_filtered.columns:
                 league_squad_counts = df_filtered.groupby('League')['Squad'].nunique().sort_values(ascending=False).reset_index()
                 league_squad_counts.columns = ['League', 'Squad Count']
@@ -214,7 +212,7 @@ if df_raw is not None:
                     color='Squad Count',
                     color_continuous_scale='Viridis',
                     text='Squad Count',
-                    labels={'Squad Count': 'အသင်းအရေအတွက်', 'League': 'လိဂ်အမည်'}
+                    labels={'Squad Count': 'Team Count', 'League': 'League Name'}
                 )
                 fig_league_dist.update_traces(textposition='outside')
                 fig_league_dist.update_layout(xaxis_tickangle=-45)
@@ -225,7 +223,7 @@ if df_raw is not None:
             st.info("Features: Gls, Ast, xG, xAG, PrgC, PrgP, Tkl, Int, Clr, Touches")
             
             # Using your specified K=3 logic
-            n_clusters = st.slider("Cluster အရေအတွက် ရွေးပါ", 2, 8, 3)
+            n_clusters = st.slider("Select the number of clusters", 2, 8, 3)
             
             df_clustered, cluster_features, scaler = process_clustering(df_filtered, n_clusters)
             
@@ -282,7 +280,7 @@ if df_raw is not None:
                 st.plotly_chart(fig_radar_clusters, use_container_width=True)
             
             with col_chart2:
-                st.write("**၃။ Cluster Characteristics (Bar Chart)**")
+                st.write("**3. Cluster Characteristics (Bar Chart)**")
                 bar_data = norm_means.reset_index().melt(id_vars='Cluster', var_name='Metric', value_name='Normalized Value')
                 bar_data['Cluster'] = bar_data['Cluster'].astype(str)
                 
@@ -296,7 +294,7 @@ if df_raw is not None:
                 )
                 st.plotly_chart(fig_bar_clusters, use_container_width=True)
             
-            with st.expander("Cluster တစ်ခုချင်းစီ၏ ပျမ်းမျှ အရည်အသွေးများ (Detailed Table)"):
+            with st.expander("Average characteristics of each cluster (Detailed Table)"):
                 st.dataframe(cluster_means.style.background_gradient(cmap='Blues'))
 
             st.write("**Sample Players from each Cluster:**")
@@ -305,8 +303,8 @@ if df_raw is not None:
                     st.table(df_clustered[df_clustered['Cluster'] == i][['Player', 'Pos', 'Squad']].head(10))
 
         with tab3:
-            st.subheader("🔍 Player တစ်ဦးချင်း ရှာဖွေရန်")
-            player_name = st.selectbox("Player အမည် ရွေးချယ်ပါ", options=sorted(df_filtered['Player'].unique()), key="search_select")
+            st.subheader("🔍 Find a player")
+            player_name = st.selectbox("Choose a player", options=sorted(df_filtered['Player'].unique()), key="search_select")
             
             if player_name:
                 p_data = df_filtered[df_filtered['Player'] == player_name].iloc[0]
@@ -329,9 +327,9 @@ if df_raw is not None:
                     st.plotly_chart(fig_radar, use_container_width=True)
 
         with tab4:
-            st.subheader("🤝 အလားတူ ကစားသမားများကို ရှာဖွေရန်")
-            target_player = st.selectbox("အခြေခံမည့် ကစားသမားကို ရွေးပါ", options=sorted(df_filtered['Player'].unique()), key="sim_select")
-            num_sim = st.number_input("အနီးစပ်ဆုံးတူသူ ဘယ်နှစ်ယောက်ပြမလဲ?", 1, 10, 5)
+            st.subheader("🤝 Find players with similar attributes")
+            target_player = st.selectbox("Select a reference player", options=sorted(df_filtered['Player'].unique()), key="sim_select")
+            num_sim = st.number_input("Number of similar players to display:", 1, 10, 5)
             
             if target_player:
                 features_sim = ['Gls', 'Ast', 'xG', 'xAG', 'PrgC', 'PrgP', 'Tkl', 'Int', 'Clr', 'Touches']
@@ -351,16 +349,16 @@ if df_raw is not None:
                 similar_df = df_filtered.iloc[indices].copy()
                 similar_df['Similarity Score'] = np.round(1 / (1 + distances[indices]), 3)
                 
-                st.write(f"**{target_player}** နှင့် အလားတူဆုံး ကစားသမားများ:")
+                st.write(f" Most similar players to: **{target_player}**")
                 st.dataframe(similar_df[['Player', 'Squad', 'Pos', 'Gls', 'xG', 'Ast', 'Similarity Score']], use_container_width=True)
                 
-                st.write("စွမ်းဆောင်ရည် နှိုင်းယှဉ်ချက် (Key Stats)")
+                st.write("Performance Analysis (Key Stats)")
                 compare_df = pd.concat([df_filtered[df_filtered['Player'] == target_player], similar_df])
                 fig_compare = px.bar(compare_df, x='Player', y=available_sim[:5], barmode='group')
                 st.plotly_chart(fig_compare, use_container_width=True)
 
         with tab5:
-            st.subheader("🏢 Squad (အသင်းအလိုက်) ခွဲခြမ်းစိတ်ဖြာခြင်း")
+            st.subheader("🏢 Squad Analysis")
             if 'Squad' in df_filtered.columns:
                 squad_stats = df_filtered.groupby('Squad').agg({
                     'Player': 'count',
@@ -370,10 +368,10 @@ if df_raw is not None:
                     'Ast': 'sum'
                 }).rename(columns={'Player': 'Squad Size', 'Age': 'Avg Age', 'Gls': 'Total Goals', 'xG': 'Total xG', 'Ast': 'Total Assists'})
                 
-                st.write("အသင်းများ၏ စွမ်းဆောင်ရည် ဇယား")
+                st.write("Squad Performance Overview")
                 st.dataframe(squad_stats.sort_values(by='Total Goals', ascending=False), use_container_width=True)
                 
-                st.write("အသင်းအလိုက် သွင်းဂိုးနှင့် မျှော်မှန်းဂိုး (Goals vs xG)")
+                st.write("Team Goals vs. xG (Goals vs xG)")
                 fig_squad = px.scatter(squad_stats, x="Total xG", y="Total Goals", 
                                       size="Squad Size", hover_name=squad_stats.index,
                                       text=squad_stats.index)
@@ -382,12 +380,12 @@ if df_raw is not None:
         
         with tab6:
             st.subheader("🏆 Position-wise Performance Score Analysis")
-            st.info("ဤအပိုင်းသည် ကစားသမားများ၏ နေရာအလိုက် (FW, MF, DF, GK) အရေးကြီးသော Stats များကို Per 90 ပြောင်းလဲပြီး Performance Score တွက်ချက်ထားခြင်း ဖြစ်သည်။")
+            st.info("Performance scores are calculated based on position-specific key stats (per 90 minutes) for FW, MF, DF, and GK.")
             
             # 1. Filter Min >= 450
             df_best = df_filtered[df_filtered['Min'] >= 450].copy()
             
-            # 2. Performance Metrics များကို Per 90 ပြောင်းလဲခြင်း
+            
             metrics_to_90 = ['Gls', 'Ast', 'xG', 'xAG', 'PrgP', 'PrgC', 'Tkl', 'Int', 'Clr', 'SCA', 'SoT']
             if '90s' in df_best.columns:
                 for m in metrics_to_90:
@@ -415,7 +413,7 @@ if df_raw is not None:
                 leagues = sorted(df_best['Comp'].unique())
                 target_positions = ['FW', 'MF', 'DF', 'GK']
                 
-                st.write("**လိဂ်အလိုက် နေရာအသီးသီးမှ အကောင်းဆုံး ကစားသမားများ**")
+                st.write("**Best Players by Position per League**")
                 
                 # Create separate charts for each league
                 for league in leagues:
@@ -459,16 +457,16 @@ if df_raw is not None:
                     summary_df = pd.concat(all_best)
                     st.dataframe(summary_df[['Player', 'Squad', 'Comp', 'Pos', 'Performance_Score']].sort_values(['Comp', 'Performance_Score'], ascending=[True, False]), use_container_width=True)
             else:
-                st.error("Dataset တွင် 'Comp' column မရှိပါ။")
+                st.error("The 'Comp' column is missing from the dataset.")
 
         with tab7:
             st.subheader("🤖 Clustering by 3 Position Groups")
-            st.write("ကစားသမားများကို GK (Saves/Clean Sheets), DF (Tackles/Clearances) နှင့် MF (Passing/Progression) stats များပေါ်မူတည်၍ အုပ်စုခွဲခြင်း")
+            st.write("Clustering players based on position-specific stats: GK (Saves/Clean Sheets), DF (Tackles/Clearances), and MF (Passing/Progression).")
             
             def cluster_by_position_groups(df):
                 temp_df = df.copy()
                 
-                # နေရာအလိုက် Group ၃ ခု (GK, DF, MF) သာ ခွဲခြားခြင်း
+                
                 def map_pos_to_group(pos):
                     pos = str(pos).upper()
                     if 'GK' in pos: return 'Goalkeeper (GK)'
@@ -479,21 +477,20 @@ if df_raw is not None:
                 temp_df['Position_Group'] = temp_df['Pos'].apply(map_pos_to_group)
                 temp_df = temp_df[temp_df['Position_Group'] != 'Exclude/Forward']
                 
-                # Clustering အတွက် သုံးမည့် Stats များ
-                # GK အတွက် Save stats များကို ဦးစားပေးထည့်သွင်းထားသည်
+
                 features = [
                     'Gls', 'Ast', 'PrgP', 'PrgC', 'Tkl', 'Int', 'Clr', 'Touches', 
                     'Cmp', 'Cmp%', 'TotDist', 'Err',
                     'Saves', 'Save%', 'CS', 'PSxG-GA' # GK Specific Stats
                 ]
                 
-                # Dataset ထဲတွင် ပါဝင်သော feature များကိုသာ ယူမည်
+                
                 available_features = [f for f in features if f in temp_df.columns]
                 
                 if temp_df.empty:
                     return temp_df, available_features
 
-                # Data imputation - Missing values များကို 0 ဖြင့် အစားထိုးခြင်း (အထူးသဖြင့် GK မဟုတ်သူများ၏ Save stats)
+                
                 X = temp_df[available_features].fillna(0)
                 scaler = StandardScaler()
                 X_scaled = scaler.fit_transform(X)
@@ -526,10 +523,10 @@ if df_raw is not None:
                 
                 # Download Data Section
                 st.write("---")
-                st.write("**Data သိမ်းဆည်းရန် (Export Options)**")
+                st.write("**Data Export Options**")
                 csv_data = df_grouped.to_csv(index=False).encode('utf-8')
                 st.download_button(
-                    label="📥 GK/DF/MF Cluster Data ကို CSV အနေဖြင့် သိမ်းမည်",
+                    label="📥 Export GK/DF/MF cluster data as CSV",
                     data=csv_data,
                     file_name='football_positional_analysis.csv',
                     mime='text/csv',
@@ -538,25 +535,25 @@ if df_raw is not None:
                 st.divider()
                 
                 # Stats comparison by group
-                st.write("**နေရာအုပ်စု ၃ ခု၏ ပျမ်းမျှ Stats များ (Save stats များအပါအဝင်)**")
+                st.write("**Average stats for the 3 clusters (including save stats)**")
                 group_summary = df_grouped.groupby('Position_Group')[clus_feats].mean()
                 st.dataframe(group_summary.style.highlight_max(axis=0), use_container_width=True)
                 
                 # Filter by group to see players
-                selected_group = st.selectbox("အုပ်စုအလိုက် ကစားသမားများကြည့်ရန် ရွေးပါ", df_grouped['Position_Group'].unique())
-                st.write(f"**{selected_group} အုပ်စုဝင် ကစားသမားများ**")
+                selected_group = st.selectbox("View players by cluster", df_grouped['Position_Group'].unique())
+                st.write(f"**{selected_group} Cluster Group Members**")
                 st.dataframe(df_grouped[df_grouped['Position_Group'] == selected_group][['Player', 'Squad', 'Pos'] + clus_feats], use_container_width=True)
             else:
-                st.error("ရွေးချယ်ထားသော Filter ထဲတွင် လိုအပ်သော ကစားသမားများ မရှိပါ။")
+                st.error("No players found in the selected filter.")
         
         with tab8:
             st.subheader("🧤 Goalkeeper Specialized Clustering")
-            st.write("Goalkeepers တွေကိုမှ သူတို့ရဲ့ Save stats နဲ့ Distribution stats ပေါ်မူတည်ပြီး သီးသန့် Cluster ထပ်ခွဲခြင်း")
+            st.write("Sub-clustering goalkeepers based on Save and Distribution stats")
 
             def cluster_goalkeepers_only(df):
-                # သင်ပေးထားသော code အတိုင်း 'Att (GK)' ရှိသူများကိုသာ GK အဖြစ်သတ်မှတ်ခြင်း
+                
                 if 'Att (GK)' not in df.columns:
-                    # အကယ်၍ column အမည် အတိအကျမပါလျှင် Pos column ကို fallback အဖြစ်သုံးမည်
+                
                     gk_df = df[df['Pos'].str.contains('GK', na=False, case=False)].copy()
                 else:
                     gk_df = df[df['Att (GK)'] > 0].copy()
@@ -564,7 +561,7 @@ if df_raw is not None:
                 if gk_df.empty:
                     return gk_df, [], None
 
-                # သင်ပေးထားသော GK features စာရင်း
+                
                 gk_features = [
                     'Att (GK)',     # GK involvement
                     'Thr',          # throws
@@ -650,12 +647,12 @@ if df_raw is not None:
                 st.write("**Goalkeeper Classification List**")
                 st.dataframe(gk_only_df[['Player', 'Squad', 'GK_Performance_Level'] + gk_feats], use_container_width=True)
             else:
-                st.warning("Dataset ထဲတွင် 'Att (GK)' stats များ သို့မဟုတ် Goalkeeper data မပြည့်စုံပါ။")
+                st.warning("Att (GK)' stats or goalkeeper data are incomplete in the dataset.")
         
 else:
     st.markdown("""
         <div class="welcome-box">
-            <h2>👋 Football Analytics Dashboard မှ ကြိုဆိုပါတယ်!</h2>
-            <p>ဤ App ကို အသုံးပြုရန် ဘေးဘယ်ဘက်ရှိ Sidebar တွင် <b>CSV Dataset</b> ကို အရင်တင်ပေးပါ။</p>
+            <h2>👋 Football Analytics Dashboard: Insights at a Glance!</h2>
+            <p>Please upload your <b>CSV Dataset</b> using the sidebar to get started.</p>
         </div>
     """, unsafe_allow_html=True)
